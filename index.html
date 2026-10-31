@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GradePilot – Simulator IPK</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f4f6f9;
+      --surface: #ffffff;
+      --border: #d1d9e0;
+      --text: #1a1f27;
+      --muted: #5a6478;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --success: #16a34a;
+      --success-light: #f0fdf4;
+      --warn: #d97706;
+      --warn-light: #fffbeb;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --radius: 10px;
+      --shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px 48px;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -0.5px;
+    }
+    .header p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    /* ── Input Grid ── */
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 480px) {
+      .input-grid { grid-template-columns: 1fr; }
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .field label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .field .hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: -4px;
+    }
+    .field input[type="number"] {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-size: 1rem;
+      color: var(--text);
+      background: var(--surface);
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+    .field input[type="number"]::-webkit-inner-spin-button,
+    .field input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .field input[type="number"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .field input.invalid {
+      border-color: var(--danger);
+      background: var(--danger-light);
+    }
+    .field-error {
+      font-size: 0.75rem;
+      color: var(--danger);
+      min-height: 16px;
+    }
+
+    /* ── Slider Row ── */
+    .slider-section {
+      margin-top: 20px;
+    }
+    .slider-label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .slider-label-row label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .slider-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .slider-controls input[type="range"] {
+      flex: 1;
+      height: 6px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+    .slider-controls input[type="number"] {
+      width: 72px;
+      padding: 7px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-size: 0.95rem;
+      color: var(--text);
+      text-align: center;
+      -moz-appearance: textfield;
+    }
+    .slider-controls input[type="number"]::-webkit-inner-spin-button,
+    .slider-controls input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .slider-controls input[type="number"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    /* ── Results ── */
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    @media (max-width: 480px) {
+      .result-grid { grid-template-columns: 1fr; }
+    }
+
+    .result-item {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .result-item .result-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .result-item .result-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--accent);
+    }
+    .result-item .result-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Status banner */
+    .status-banner {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      margin-bottom: 20px;
+      border-left: 4px solid transparent;
+    }
+    .status-banner.success {
+      background: var(--success-light);
+      border-color: var(--success);
+      color: #14532d;
+    }
+    .status-banner.warn {
+      background: var(--warn-light);
+      border-color: var(--warn);
+      color: #78350f;
+    }
+    .status-banner.danger {
+      background: var(--danger-light);
+      border-color: var(--danger);
+      color: #7f1d1d;
+    }
+
+    /* ── Scale Bar ── */
+    .scale-section { margin-bottom: 20px; }
+    .scale-section .scale-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 10px;
+    }
+    .scale-track {
+      position: relative;
+      height: 16px;
+      background: #e5e7eb;
+      border-radius: 99px;
+      margin-bottom: 24px;
+    }
+    .scale-fill {
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      border-radius: 99px;
+      background: #bfdbfe;
+      transition: width 0.25s;
+    }
+    .scale-marker {
+      position: absolute;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      border: 2px solid white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      transition: left 0.25s;
+    }
+    .scale-marker.current { background: var(--muted); }
+    .scale-marker.simulated { background: var(--accent); }
+    .scale-marker.target { background: var(--success); }
+
+    .scale-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .scale-legend span { display: flex; align-items: center; gap: 6px; }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+    .scale-axis {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--muted);
+      margin-top: -18px;
+      margin-bottom: 8px;
+      padding: 0 2px;
+    }
+
+    /* ── Conclusion ── */
+    .conclusion {
+      font-size: 0.9rem;
+      color: var(--text);
+      line-height: 1.7;
+      padding: 12px 14px;
+      background: var(--bg);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── Validation panel ── */
+    .validation-panel {
+      background: var(--danger-light);
+      border: 1px solid #fca5a5;
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .validation-panel p {
+      font-size: 0.88rem;
+      color: var(--danger);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+    .validation-panel ul {
+      padding-left: 18px;
+      font-size: 0.83rem;
+      color: #991b1b;
+    }
+    .validation-panel ul li { margin-bottom: 2px; }
+
+    /* ── How it works ── */
+    details {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+    details summary {
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: var(--text);
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    details summary::after {
+      content: "▸";
+      font-size: 0.85rem;
+      color: var(--muted);
+      transition: transform 0.2s;
+    }
+    details[open] summary::after { transform: rotate(90deg); }
+    details summary::-webkit-details-marker { display: none; }
+    .how-body {
+      padding: 0 20px 20px;
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .how-body h4 {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 14px 0 6px;
+    }
+    .formula-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 10px 14px;
+      font-family: "Courier New", monospace;
+      font-size: 0.83rem;
+      color: var(--text);
+      margin: 6px 0;
+      line-height: 1.9;
+    }
+    .disclaimer {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: var(--warn-light);
+      border-left: 3px solid var(--warn);
+      border-radius: 5px;
+      font-size: 0.82rem;
+      color: #92400e;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 32px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>GradePilot</h1>
+    <p>Simulator IPK – Hitung IPS yang kamu butuhkan untuk mencapai target IPK</p>
+  </div>
+
+  <!-- Input Card -->
+  <div class="card">
+    <div class="card-title">Data Akademik</div>
+    <div class="input-grid">
+      <div class="field">
+        <label for="inp-gpa">IPK saat ini</label>
+        <span class="hint">Skala 0,00 – 4,00</span>
+        <input type="number" id="inp-gpa" min="0" max="4" step="0.01" placeholder="cth: 3.20" />
+        <span class="field-error" id="err-gpa"></span>
+      </div>
+      <div class="field">
+        <label for="inp-sks">SKS yang telah ditempuh</label>
+        <span class="hint">Bilangan bulat positif</span>
+        <input type="number" id="inp-sks" min="1" step="1" placeholder="cth: 100" />
+        <span class="field-error" id="err-sks"></span>
+      </div>
+      <div class="field">
+        <label for="inp-sks-next">SKS semester berikutnya</label>
+        <span class="hint">Bilangan bulat positif</span>
+        <input type="number" id="inp-sks-next" min="1" step="1" placeholder="cth: 20" />
+        <span class="field-error" id="err-sks-next"></span>
+      </div>
+      <div class="field">
+        <label for="inp-target">Target IPK setelah semester ini</label>
+        <span class="hint">Skala 0,00 – 4,00</span>
+        <input type="number" id="inp-target" min="0" max="4" step="0.01" placeholder="cth: 3.30" />
+        <span class="field-error" id="err-target"></span>
+      </div>
+    </div>
+
+    <!-- Slider for estimated IPS -->
+    <div class="slider-section">
+      <div class="slider-label-row">
+        <label>Perkiraan IPS semester berikutnya</label>
+      </div>
+      <div class="slider-controls">
+        <input type="range" id="slider-ips" min="0" max="4" step="0.01" />
+        <input type="number" id="inp-ips" min="0" max="4" step="0.01" placeholder="0.00" />
+      </div>
+      <span class="field-error" id="err-ips"></span>
+    </div>
+  </div>
+
+  <!-- Results Card -->
+  <div class="card" id="results-card">
+    <div class="card-title">Hasil Simulasi</div>
+    <div id="results-content"></div>
+  </div>
+
+  <!-- How it works -->
+  <details>
+    <summary>Cara perhitungan</summary>
+    <div class="how-body">
+      <h4>Rumus yang digunakan</h4>
+      <div class="formula-box">
+        IPK Simulasi = (IPK saat ini × SKS ditempuh + Perkiraan IPS × SKS berikutnya)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;÷ (SKS ditempuh + SKS berikutnya)
+      </div>
+      <div class="formula-box">
+        IPS Diperlukan = (Target IPK × (SKS ditempuh + SKS berikutnya) − IPK saat ini × SKS ditempuh)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;÷ SKS berikutnya
+      </div>
+      <div class="formula-box">
+        IPK Maksimum = IPK Simulasi ketika Perkiraan IPS = 4,00
+      </div>
+
+      <h4>Asumsi</h4>
+      <ul style="padding-left:18px;margin-top:4px;">
+        <li>Seluruh SKS semester berikutnya dihitung sebagai SKS baru.</li>
+        <li>Pengulangan mata kuliah dan aturan khusus kampus tidak diperhitungkan.</li>
+        <li>Jika IPS yang diperlukan ≤ 0, target sudah tercapai bahkan dengan IPS 0,00.</li>
+        <li>Jika IPS yang diperlukan &gt; 4,00, target tidak dapat dicapai dalam satu semester.</li>
+        <li>IPS yang ditampilkan dibulatkan ke atas agar nilai tersebut selalu cukup untuk mencapai target.</li>
+      </ul>
+
+      <div class="disclaimer">
+        ⚠ Hasil ini merupakan simulasi matematis. Penghitungan resmi mengikuti aturan akademik kampus Anda masing-masing.
+      </div>
+    </div>
+  </details>
+
+  <footer>GradePilot &mdash; Simulator IPK &mdash; Hanya untuk estimasi, bukan penghitungan resmi akademik.</footer>
+</div>
+
+<script>
+  // ─── Element references ───────────────────────────────────────────
+  const inpGpa      = document.getElementById('inp-gpa');
+  const inpSks      = document.getElementById('inp-sks');
+  const inpSksNext  = document.getElementById('inp-sks-next');
+  const inpTarget   = document.getElementById('inp-target');
+  const sliderIps   = document.getElementById('slider-ips');
+  const inpIps      = document.getElementById('inp-ips');
+  const resultsContent = document.getElementById('results-content');
+
+  const errGpa     = document.getElementById('err-gpa');
+  const errSks     = document.getElementById('err-sks');
+  const errSksNext = document.getElementById('err-sks-next');
+  const errTarget  = document.getElementById('err-target');
+  const errIps     = document.getElementById('err-ips');
+
+  // ─── Set initial values ───────────────────────────────────────────
+  inpGpa.value    = '3.20';
+  inpSks.value    = '100';
+  inpSksNext.value = '20';
+  inpTarget.value = '3.30';
+  sliderIps.value = '3.50';
+  inpIps.value    = '3.50';
+
+  // ─── Keep slider and number input in sync ────────────────────────
+  sliderIps.addEventListener('input', () => {
+    inpIps.value = sliderIps.value;
+    update();
+  });
+
+  inpIps.addEventListener('input', () => {
+    const v = parseFloat(inpIps.value);
+    if (!isNaN(v)) {
+      const clamped = Math.min(4, Math.max(0, v));
+      sliderIps.value = clamped;
+    }
+    update();
+  });
+
+  // ─── Attach listeners to all inputs ──────────────────────────────
+  [inpGpa, inpSks, inpSksNext, inpTarget].forEach(el => {
+    el.addEventListener('input', update);
+  });
+
+  // ─── Read inputs ─────────────────────────────────────────────────
+  function readInputs() {
+    return {
+      gpa:     inpGpa.value.trim(),
+      sks:     inpSks.value.trim(),
+      sksNext: inpSksNext.value.trim(),
+      target:  inpTarget.value.trim(),
+      ips:     inpIps.value.trim(),
+    };
+  }
+
+  // ─── Validate inputs ─────────────────────────────────────────────
+  // Returns { valid: bool, errors: { field: message }, values: {...} }
+  function validate(raw) {
+    const errors = {};
+    const values = {};
+
+    // Clear previous inline errors
+    [inpGpa, inpSks, inpSksNext, inpTarget, inpIps].forEach(el => el.classList.remove('invalid'));
+    [errGpa, errSks, errSksNext, errTarget, errIps].forEach(el => el.textContent = '');
+
+    // GPA
+    if (raw.gpa === '') {
+      errors.gpa = 'IPK saat ini wajib diisi.';
+    } else {
+      const v = parseFloat(raw.gpa);
+      if (isNaN(v) || v < 0 || v > 4) {
+        errors.gpa = 'IPK harus bernilai antara 0,00 dan 4,00.';
+      } else {
+        values.gpa = v;
+      }
+    }
+
+    // SKS taken
+    if (raw.sks === '') {
+      errors.sks = 'SKS yang ditempuh wajib diisi.';
+    } else {
+      const v = Number(raw.sks);
+      if (!Number.isInteger(v) || v < 1) {
+        errors.sks = 'SKS harus bilangan bulat positif (≥ 1).';
+      } else {
+        values.sks = v;
+      }
+    }
+
+    // SKS next
+    if (raw.sksNext === '') {
+      errors.sksNext = 'SKS semester berikutnya wajib diisi.';
+    } else {
+      const v = Number(raw.sksNext);
+      if (!Number.isInteger(v) || v < 1) {
+        errors.sksNext = 'SKS harus bilangan bulat positif (≥ 1).';
+      } else {
+        values.sksNext = v;
+      }
+    }
+
+    // Target GPA
+    if (raw.target === '') {
+      errors.target = 'Target IPK wajib diisi.';
+    } else {
+      const v = parseFloat(raw.target);
+      if (isNaN(v) || v < 0 || v > 4) {
+        errors.target = 'Target IPK harus bernilai antara 0,00 dan 4,00.';
+      } else {
+        values.target = v;
+      }
+    }
+
+    // Estimated IPS
+    if (raw.ips === '') {
+      errors.ips = 'Perkiraan IPS wajib diisi.';
+    } else {
+      const v = parseFloat(raw.ips);
+      if (isNaN(v) || v < 0 || v > 4) {
+        errors.ips = 'Perkiraan IPS harus bernilai antara 0,00 dan 4,00.';
+      } else {
+        values.ips = v;
+      }
+    }
+
+    // Show inline field errors
+    const fieldMap = [
+      [errors.gpa,     inpGpa,     errGpa],
+      [errors.sks,     inpSks,     errSks],
+      [errors.sksNext, inpSksNext, errSksNext],
+      [errors.target,  inpTarget,  errTarget],
+      [errors.ips,     inpIps,     errIps],
+    ];
+    fieldMap.forEach(([msg, el, errEl]) => {
+      if (msg) { el.classList.add('invalid'); errEl.textContent = msg; }
+    });
+
+    return { valid: Object.keys(errors).length === 0, errors, values };
+  }
+
+  // ─── Calculate ───────────────────────────────────────────────────
+  function calculate(v) {
+    const { gpa, sks, sksNext, target, ips } = v;
+    const totalSks = sks + sksNext;
+
+    // Simulated GPA with estimated IPS
+    const simGpa = (gpa * sks + ips * sksNext) / totalSks;
+
+    // Maximum achievable GPA (IPS = 4.00)
+    const maxGpa = (gpa * sks + 4.0 * sksNext) / totalSks;
+
+    // Required IPS (exact, before rounding)
+    const requiredIpsExact = (target * totalSks - gpa * sks) / sksNext;
+
+    return { simGpa, maxGpa, requiredIpsExact };
+  }
+
+  // ─── Ceiling to 2 decimal places ─────────────────────────────────
+  // Use a tiny epsilon to absorb floating point imprecision so that
+  // a mathematically exact value like 3.800000000000001 rounds to 3.80
+  // rather than 3.81.
+  function ceilTo2(x) {
+    const EPS = 1e-9;
+    return Math.ceil(x * 100 - EPS) / 100;
+  }
+
+  // ─── Format number (always 2 decimal places) ─────────────────────
+  function fmt(n) {
+    return n.toFixed(2);
+  }
+
+  // ─── Build scale bar HTML ─────────────────────────────────────────
+  function buildScaleBar(currentGpa, simGpa, targetGpa) {
+    const pct = v => (Math.min(4, Math.max(0, v)) / 4 * 100).toFixed(2) + '%';
+    return `
+      <div class="scale-section">
+        <div class="scale-title">Perbandingan pada skala 0 – 4</div>
+        <div class="scale-track">
+          <div class="scale-fill" style="width:${pct(simGpa)}"></div>
+          <div class="scale-marker current"   title="IPK saat ini: ${fmt(currentGpa)}"  style="left:${pct(currentGpa)}"></div>
+          <div class="scale-marker simulated" title="IPK simulasi: ${fmt(simGpa)}"      style="left:${pct(simGpa)}"></div>
+          <div class="scale-marker target"    title="Target IPK: ${fmt(targetGpa)}"     style="left:${pct(targetGpa)}"></div>
+        </div>
+        <div class="scale-axis"><span>0,00</span><span>1,00</span><span>2,00</span><span>3,00</span><span>4,00</span></div>
+        <div class="scale-legend">
+          <span><span class="legend-dot" style="background:var(--muted)"></span> IPK saat ini (${fmt(currentGpa)})</span>
+          <span><span class="legend-dot" style="background:var(--accent)"></span> IPK simulasi (${fmt(simGpa)})</span>
+          <span><span class="legend-dot" style="background:var(--success)"></span> Target IPK (${fmt(targetGpa)})</span>
+        </div>
+      </div>`;
+  }
+
+  // ─── Render results ───────────────────────────────────────────────
+  function renderResults(v) {
+    const { gpa, sks, sksNext, target, ips } = v;
+    const { simGpa, maxGpa, requiredIpsExact } = calculate(v);
+
+    // ── Determine scenario ──────────────────────────────────────────
+    // Use a tiny epsilon for floating point safety on the 4.00 boundary
+    const EPS = 1e-9;
+    const alreadyAchieved  = requiredIpsExact <= EPS;          // required ≤ 0
+    const impossible       = requiredIpsExact > 4.0 + EPS;     // required > 4.00
+    const requiredDisplay  = alreadyAchieved ? 0 : (impossible ? null : ceilTo2(requiredIpsExact));
+
+    // Does the estimated IPS achieve the target? Use exact value.
+    const estimateAchieves = !impossible && (ips >= requiredIpsExact - EPS);
+
+    // ── Result cards ────────────────────────────────────────────────
+    let requiredCard;
+    if (alreadyAchieved) {
+      requiredCard = `
+        <div class="result-item">
+          <div class="result-label">IPS Diperlukan</div>
+          <div class="result-value" style="color:var(--success)">—</div>
+          <div class="result-sub">Target sudah tercapai</div>
+        </div>`;
+    } else if (impossible) {
+      requiredCard = `
+        <div class="result-item">
+          <div class="result-label">IPS Diperlukan</div>
+          <div class="result-value" style="color:var(--danger)">&gt; 4,00</div>
+          <div class="result-sub">Tidak dapat dicapai</div>
+        </div>`;
+    } else {
+      requiredCard = `
+        <div class="result-item">
+          <div class="result-label">IPS Diperlukan</div>
+          <div class="result-value">${fmt(requiredDisplay)}</div>
+          <div class="result-sub">Minimum untuk mencapai target</div>
+        </div>`;
+    }
+
+    let statusBanner, statusClass;
+    if (alreadyAchieved) {
+      statusClass  = 'success';
+      statusBanner = `✔ Target IPK ${fmt(target)} sudah tercapai meskipun IPS semester ini adalah 0,00.`;
+    } else if (impossible) {
+      statusClass  = 'danger';
+      statusBanner = `✘ Target IPK ${fmt(target)} tidak dapat dicapai dalam satu semester. IPK maksimum yang bisa diraih adalah <strong>${fmt(maxGpa)}</strong> (dengan IPS 4,00).`;
+    } else if (estimateAchieves) {
+      statusClass  = 'success';
+      statusBanner = `✔ Perkiraan IPS <strong>${fmt(ips)}</strong> sudah cukup untuk mencapai target IPK ${fmt(target)}.`;
+    } else {
+      statusClass  = 'warn';
+      statusBanner = `◐ Perkiraan IPS <strong>${fmt(ips)}</strong> belum mencapai target. Kamu memerlukan minimal IPS <strong>${fmt(requiredDisplay)}</strong>.`;
+    }
+
+    // ── Conclusion text ─────────────────────────────────────────────
+    let conclusion;
+    if (alreadyAchieved) {
+      conclusion = `Berdasarkan data yang kamu masukkan, IPK saat ini (${fmt(gpa)}) dengan ${sks} SKS sudah melampaui target ${fmt(target)} bahkan jika IPS semester berikutnya adalah 0,00. Tidak ada kebutuhan IPS minimum yang perlu dipenuhi untuk tujuan ini.`;
+    } else if (impossible) {
+      conclusion = `Dengan IPK saat ini ${fmt(gpa)} dan ${sks} SKS, menambah ${sksNext} SKS dengan IPS setinggi 4,00 pun hanya akan menghasilkan IPK ${fmt(maxGpa)}. Target IPK ${fmt(target)} tidak dapat dicapai dalam satu semester tambahan.`;
+    } else if (estimateAchieves) {
+      conclusion = `Dengan perkiraan IPS ${fmt(ips)}, IPK simulasi kamu adalah ${fmt(simGpa)} — melampaui target ${fmt(target)}. Pertahankan performa ini!`;
+    } else {
+      conclusion = `Perkiraan IPS ${fmt(ips)} menghasilkan IPK simulasi ${fmt(simGpa)}, yang masih di bawah target ${fmt(target)}. Untuk mencapai target, kamu perlu meraih IPS minimal ${fmt(requiredDisplay)} pada semester berikutnya.`;
+    }
+
+    // ── Build HTML ──────────────────────────────────────────────────
+    resultsContent.innerHTML = `
+      <div class="result-grid">
+        <div class="result-item">
+          <div class="result-label">IPK Simulasi</div>
+          <div class="result-value">${fmt(simGpa)}</div>
+          <div class="result-sub">Dengan perkiraan IPS ${fmt(ips)}</div>
+        </div>
+        ${requiredCard}
+        <div class="result-item">
+          <div class="result-label">IPK Maksimum</div>
+          <div class="result-value">${fmt(maxGpa)}</div>
+          <div class="result-sub">Jika IPS = 4,00</div>
+        </div>
+      </div>
+
+      <div class="status-banner ${statusClass}">${statusBanner}</div>
+
+      ${buildScaleBar(gpa, simGpa, target)}
+
+      <div class="conclusion">${conclusion}</div>
+    `;
+  }
+
+  // ─── Render validation errors ─────────────────────────────────────
+  function renderValidationErrors(errors) {
+    const messages = Object.values(errors);
+    resultsContent.innerHTML = `
+      <div class="validation-panel">
+        <p>Mohon perbaiki input berikut:</p>
+        <ul>${messages.map(m => `<li>${m}</li>`).join('')}</ul>
+      </div>`;
+  }
+
+  // ─── Main update function ─────────────────────────────────────────
+  function update() {
+    const raw    = readInputs();
+    const result = validate(raw);
+
+    if (!result.valid) {
+      renderValidationErrors(result.errors);
+      return;
+    }
+
+    renderResults(result.values);
+  }
+
+  // ─── Initial render ───────────────────────────────────────────────
+  update();
+</script>
+</body>
+</html>
